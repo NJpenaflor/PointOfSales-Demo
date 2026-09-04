@@ -8,16 +8,41 @@ import POS from './pages/POS'
 import Inventory from './pages/Inventory'
 import Reports from './pages/Reports'
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001'
+const API_BASE = import.meta.env?.VITE_API_BASE || ''
+const DEMO_STORAGE = {
+  products: 'uptown-brew-demo-products',
+  transactions: 'uptown-brew-demo-transactions',
+  users: 'uptown-brew-demo-users',
+}
+
+function readDemoData(key, fallback){
+  try {
+    const stored = localStorage.getItem(key)
+    return stored ? JSON.parse(stored) : fallback
+  } catch (error) {
+    console.error('Demo data read failed:', error)
+    return fallback
+  }
+}
 
 export default function App(){
   // top-level app state
   const [user, setUser] = useState(null) // {username, role}
   const [page, setPage] = useState('POS')
-  const [products, setProducts] = useState(initialProducts)
-  const [transactions, setTransactions] = useState(sampleTransactions)
+  const [products, setProducts] = useState(() => readDemoData(DEMO_STORAGE.products, initialProducts))
+  const [transactions, setTransactions] = useState(() => readDemoData(DEMO_STORAGE.transactions, sampleTransactions))
 
   useEffect(() => {
+    if (!API_BASE) localStorage.setItem(DEMO_STORAGE.products, JSON.stringify(products))
+  }, [products])
+
+  useEffect(() => {
+    if (!API_BASE) localStorage.setItem(DEMO_STORAGE.transactions, JSON.stringify(transactions))
+  }, [transactions])
+
+  useEffect(() => {
+    if (!API_BASE) return
+
     async function loadData(){
       try {
         const [productsResponse, transactionsResponse] = await Promise.all([
@@ -45,6 +70,21 @@ export default function App(){
   }, [])
 
   async function handleLogin(username, password){
+    if (!API_BASE) {
+      if (!username || !password) return false
+      const normalizedUsername = username.toLowerCase()
+      const users = readDemoData(DEMO_STORAGE.users, [])
+      const user = users.find(item => item.username === normalizedUsername && item.password === password)
+      const isDefaultAdmin = normalizedUsername === 'admin' && password === 'admin123'
+      if (normalizedUsername === 'admin' && !isDefaultAdmin && !user) return false
+      const demoUser = user || (isDefaultAdmin
+        ? { username: 'admin', role: 'admin' }
+        : { username: normalizedUsername, role: 'cashier' })
+      setUser(demoUser)
+      setPage(demoUser.role === 'admin' ? 'Dashboard' : 'POS')
+      return true
+    }
+
     try {
       const response = await fetch(`${API_BASE}/api/login`, {
         method: 'POST',
@@ -71,6 +111,19 @@ export default function App(){
       return { success: false, message: 'Passwords do not match' }
     }
 
+    if (!API_BASE) {
+      const users = readDemoData(DEMO_STORAGE.users, [])
+      const normalizedUsername = username.trim().toLowerCase()
+      if (users.some(item => item.username === normalizedUsername)) {
+        return { success: false, message: 'Username already exists' }
+      }
+      localStorage.setItem(DEMO_STORAGE.users, JSON.stringify([
+        ...users,
+        { username: normalizedUsername, password, role },
+      ]))
+      return { success: true, message: 'Account created. Please sign in.' }
+    }
+
     try {
       const response = await fetch(`${API_BASE}/api/signup`, {
         method: 'POST',
@@ -93,6 +146,18 @@ export default function App(){
   function handleLogout(){ setUser(null); setPage('POS') }
 
   async function addTransaction(tx){
+    if (!API_BASE) {
+      setTransactions(prev => [
+        { ...tx, id: `demo-${Date.now()}` },
+        ...prev,
+      ])
+      setProducts(prev => prev.map(product => {
+        const sold = tx.items.find(item => item.id === product.id)
+        return sold ? { ...product, stock: Math.max(0, product.stock - sold.qty) } : product
+      }))
+      return true
+    }
+
     try {
       const response = await fetch(`${API_BASE}/api/transactions`, {
         method: 'POST',
@@ -120,6 +185,11 @@ export default function App(){
   }
 
   async function updateProduct(updated){
+    if (!API_BASE) {
+      setProducts(prev => prev.map(product => product.id === updated.id ? updated : product))
+      return true
+    }
+
     try {
       const response = await fetch(`${API_BASE}/api/products/${updated.id}`, {
         method: 'PUT',
@@ -143,6 +213,11 @@ export default function App(){
   }
 
   async function addProduct(newProduct){
+    if (!API_BASE) {
+      setProducts(prev => [{ ...newProduct, id: `demo-${Date.now()}` }, ...prev])
+      return true
+    }
+
     try {
       const response = await fetch(`${API_BASE}/api/products`, {
         method: 'POST',
@@ -166,6 +241,11 @@ export default function App(){
   }
 
   async function deleteProduct(id){
+    if (!API_BASE) {
+      setProducts(prev => prev.filter(product => product.id !== id))
+      return
+    }
+
     try {
       const response = await fetch(`${API_BASE}/api/products/${id}`, {
         method: 'DELETE',
@@ -185,6 +265,11 @@ export default function App(){
   }
 
   async function clearTransactions(){
+    if (!API_BASE) {
+      setTransactions([])
+      return
+    }
+
     try {
       const response = await fetch(`${API_BASE}/api/transactions`, {
         method: 'DELETE',

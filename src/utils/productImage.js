@@ -12,7 +12,8 @@ export function getProductImageSrc(product){
     value.startsWith('data:image/') ||
     value.startsWith('http://') ||
     value.startsWith('https://') ||
-    value.startsWith('/')
+    value.startsWith('/') ||
+    value.startsWith('./')
   ) {
     return value
   }

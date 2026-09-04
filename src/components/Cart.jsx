@@ -25,7 +25,8 @@ export default function Cart({ cartItems, onChangeQty, onCheckout }){
       <h3>Cart</h3>
       {cartItems.length === 0 && <div className="small muted">No items</div>}
       {cartItems.map(item=> (
-        <div key={item.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:8}}>
+        <div key={item.id} className="cart-item">
+          {item.image && <img className="cart-item-image" src={item.image} alt="" />}
           <div>
             <div style={{fontWeight:700}}>{item.name}</div>
             <div className="small">PHP {item.price}</div>

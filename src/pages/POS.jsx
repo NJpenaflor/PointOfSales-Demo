@@ -12,7 +12,7 @@ export default function POS({ products, onAddTransaction }){
     setCart(prev => {
       const found = prev.find(i=>i.id===product.id)
       if(found) return prev.map(i => i.id===product.id ? {...i, qty: i.qty+1} : i)
-      return [{ id: product.id, name: product.name, price: product.price, qty:1 }, ...prev]
+      return [{ id: product.id, name: product.name, price: product.price, image: product.image, qty:1 }, ...prev]
     })
   }
 
@@ -37,10 +37,10 @@ export default function POS({ products, onAddTransaction }){
   }
 
   return (
-    <div style={{display:'flex',gap:12}}>
-      <div style={{flex:1}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-          <input placeholder="Search products..." value={query} onChange={e=>setQuery(e.target.value)} style={{padding:8,borderRadius:8,border:'1px solid #ddd',width:'60%'}} />
+    <div className="pos-layout">
+      <div className="pos-products">
+        <div className="pos-toolbar">
+          <input className="pos-search" placeholder="Search products..." value={query} onChange={e=>setQuery(e.target.value)} />
           <div className="small muted">Products: {list.length}</div>
         </div>
 
@@ -57,7 +57,7 @@ export default function POS({ products, onAddTransaction }){
         </div>
       </div>
 
-      <div style={{width:360}}>
+      <div className="pos-cart">
         <Cart cartItems={cart} onChangeQty={changeQty} onCheckout={checkout} />
       </div>
     </div>

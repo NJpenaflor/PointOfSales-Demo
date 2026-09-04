@@ -13,7 +13,7 @@ export default function Sidebar({ user, page, setPage, onLogout }){
         </div>
       </div>
 
-      <nav>
+      <nav className="sidebar-nav">
         <button className="btn" style={{width:'100%',marginBottom:8}} onClick={()=>setPage('POS')}>POS</button>
         {user.role === 'admin' && (
           <>

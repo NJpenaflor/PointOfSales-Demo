@@ -44,15 +44,15 @@ export default function Login({ onLogin, onSignup }){
         <div style={{textAlign:'center',marginBottom:12}}>
           <img src={logo} alt="logo" width="140" />
           <h2>UPTOWN BREW</h2>
-          <div className="small muted">Villanueva Street</div>
+          <div className="small muted">Demo Mode Only</div>
         </div>
         <form className="card" onSubmit={submit}>
           <div style={{marginBottom:8}}>
-            <label className="small">Username</label>
+            <label className="small">Username Ex: Admin</label>
             <input value={username} onChange={e=>setUsername(e.target.value)} style={{width:'100%',padding:8,borderRadius:6,border:'1px solid #ddd'}} />
           </div>
           <div style={{marginBottom:8}}>
-            <label className="small">Password</label>
+            <label className="small">Password Ex: Admin123</label>
             <input type="password" value={password} onChange={e=>setPassword(e.target.value)} style={{width:'100%',padding:8,borderRadius:6,border:'1px solid #ddd'}} />
           </div>
           {mode === 'signup' && (
