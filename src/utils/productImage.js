@@ -1,4 +1,4 @@
-const publicAssetPrefix = '/assets/'
+const publicAssetPrefix = `${import.meta.env.BASE_URL}assets/`
 
 export function getProductImageSrc(product){
   const rawValue = product?.img || product?.image || product?.imageUrl || product?.photo || ''
