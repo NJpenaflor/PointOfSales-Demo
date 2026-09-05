@@ -8,7 +8,7 @@ import POS from './pages/POS'
 import Inventory from './pages/Inventory'
 import Reports from './pages/Reports'
 
-const API_BASE = import.meta.env?.VITE_API_BASE || ''
+const API_BASE = ''
 const DEMO_STORAGE = {
   products: 'uptown-brew-demo-products',
   transactions: 'uptown-brew-demo-transactions',
@@ -33,78 +33,12 @@ export default function App(){
   const [transactions, setTransactions] = useState(() => readDemoData(DEMO_STORAGE.transactions, sampleTransactions))
 
   useEffect(() => {
-    if (!API_BASE) localStorage.setItem(DEMO_STORAGE.products, JSON.stringify(products))
+    localStorage.setItem(DEMO_STORAGE.products, JSON.stringify(products))
   }, [products])
 
   useEffect(() => {
-    if (!API_BASE) localStorage.setItem(DEMO_STORAGE.transactions, JSON.stringify(transactions))
+    localStorage.setItem(DEMO_STORAGE.transactions, JSON.stringify(transactions))
   }, [transactions])
-
-  useEffect(() => {
-    if (!API_BASE) return
-
-    async function loadData(){
-      try {
-        const [productsResponse, transactionsResponse] = await Promise.all([
-          fetch(`${API_BASE}/api/products`),
-          fetch(`${API_BASE}/api/transactions`),
-        ])
-
-        if (!productsResponse.ok) {
-          throw new Error('Unable to load products')
-        }
-
-        const productsResult = await productsResponse.json()
-        setProducts(productsResult.products || [])
-
-        if (transactionsResponse.ok) {
-          const transactionsResult = await transactionsResponse.json()
-          setTransactions(transactionsResult.transactions || [])
-        }
-      } catch (error) {
-        console.error('Initial data request failed:', error)
-      }
-    }
-
-    loadData()
-  }, [])
-
-  async function handleLogin(username, password){
-    if (!API_BASE) {
-      if (!username || !password) return false
-      const normalizedUsername = username.toLowerCase()
-      const users = readDemoData(DEMO_STORAGE.users, [])
-      const user = users.find(item => item.username === normalizedUsername && item.password === password)
-      const isDefaultAdmin = normalizedUsername === 'admin' && password === 'admin123'
-      if (normalizedUsername === 'admin' && !isDefaultAdmin && !user) return false
-      const demoUser = user || (isDefaultAdmin
-        ? { username: 'admin', role: 'admin' }
-        : { username: normalizedUsername, role: 'cashier' })
-      setUser(demoUser)
-      setPage(demoUser.role === 'admin' ? 'Dashboard' : 'POS')
-      return true
-    }
-
-    try {
-      const response = await fetch(`${API_BASE}/api/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      })
-
-      if (!response.ok) {
-        return false
-      }
-
-      const userData = await response.json()
-      setUser(userData)
-      setPage(userData.role === 'admin' ? 'Dashboard' : 'POS')
-      return true
-    } catch (error) {
-      console.error('Login request failed:', error)
-      return false
-    }
-  }
 
   async function handleSignup(username, password, confirmPassword, role){
     if (password !== confirmPassword) {
