@@ -8,7 +8,6 @@ import POS from './pages/POS'
 import Inventory from './pages/Inventory'
 import Reports from './pages/Reports'
 
-const API_BASE = ''
 const DEMO_STORAGE = {
   products: 'uptown-brew-demo-products',
   transactions: 'uptown-brew-demo-transactions',
@@ -40,186 +39,74 @@ export default function App(){
     localStorage.setItem(DEMO_STORAGE.transactions, JSON.stringify(transactions))
   }, [transactions])
 
-  async function handleSignup(username, password, confirmPassword, role){
+  function handleLogin(username, password){
+    if (!username || !password) return false
+
+    const normalizedUsername = username.trim().toLowerCase()
+    const users = readDemoData(DEMO_STORAGE.users, [])
+    const savedUser = users.find(item => item.username === normalizedUsername && item.password === password)
+    const isDefaultAdmin = normalizedUsername === 'admin' && password === 'admin123'
+
+    if (normalizedUsername === 'admin' && !isDefaultAdmin && !savedUser) return false
+
+    const loggedInUser = savedUser || (isDefaultAdmin
+      ? { username: 'admin', role: 'admin' }
+      : { username: normalizedUsername, role: 'cashier' })
+
+    setUser(loggedInUser)
+    setPage(loggedInUser.role === 'admin' ? 'Dashboard' : 'POS')
+    return true
+  }
+
+  function handleSignup(username, password, confirmPassword, role){
     if (password !== confirmPassword) {
       return { success: false, message: 'Passwords do not match' }
     }
 
-    if (!API_BASE) {
-      const users = readDemoData(DEMO_STORAGE.users, [])
-      const normalizedUsername = username.trim().toLowerCase()
-      if (users.some(item => item.username === normalizedUsername)) {
-        return { success: false, message: 'Username already exists' }
-      }
-      localStorage.setItem(DEMO_STORAGE.users, JSON.stringify([
-        ...users,
-        { username: normalizedUsername, password, role },
-      ]))
-      return { success: true, message: 'Account created. Please sign in.' }
+    const normalizedUsername = username.trim().toLowerCase()
+    if (!normalizedUsername || !password) {
+      return { success: false, message: 'Username and password are required' }
     }
 
-    try {
-      const response = await fetch(`${API_BASE}/api/signup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password, role }),
-      })
-
-      const result = await response.json()
-      if (!response.ok) {
-        return { success: false, message: result.error || 'Unable to create account' }
-      }
-
-      return { success: true, message: 'Account created. Please sign in.' }
-    } catch (error) {
-      console.error('Signup request failed:', error)
-      return { success: false, message: 'Unable to connect to server' }
+    const users = readDemoData(DEMO_STORAGE.users, [])
+    if (users.some(item => item.username === normalizedUsername)) {
+      return { success: false, message: 'Username already exists' }
     }
+
+    localStorage.setItem(DEMO_STORAGE.users, JSON.stringify([
+      ...users,
+      { username: normalizedUsername, password, role },
+    ]))
+    return { success: true, message: 'Account created. Please sign in.' }
   }
 
   function handleLogout(){ setUser(null); setPage('POS') }
 
-  async function addTransaction(tx){
-    if (!API_BASE) {
-      setTransactions(prev => [
-        { ...tx, id: `demo-${Date.now()}` },
-        ...prev,
-      ])
-      setProducts(prev => prev.map(product => {
-        const sold = tx.items.find(item => item.id === product.id)
-        return sold ? { ...product, stock: Math.max(0, product.stock - sold.qty) } : product
-      }))
-      return true
-    }
-
-    try {
-      const response = await fetch(`${API_BASE}/api/transactions`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(tx),
-      })
-
-      const result = await response.json()
-      if (!response.ok) {
-        alert(result.error || 'Unable to save transaction')
-        return false
-      }
-
-      setTransactions(prev => [result.transaction, ...prev])
-      setProducts(prev => prev.map(product => {
-        const updatedProduct = result.products.find(p => p.id === product.id)
-        return updatedProduct || product
-      }))
-      return true
-    } catch (error) {
-      console.error('Transaction create failed:', error)
-      alert('Unable to connect to server')
-      return false
-    }
+  function addTransaction(tx){
+    setTransactions(prev => [{ ...tx, id: `demo-${Date.now()}` }, ...prev])
+    setProducts(prev => prev.map(product => {
+      const sold = tx.items.find(item => item.id === product.id)
+      return sold ? { ...product, stock: Math.max(0, product.stock - sold.qty) } : product
+    }))
+    return true
   }
 
-  async function updateProduct(updated){
-    if (!API_BASE) {
-      setProducts(prev => prev.map(product => product.id === updated.id ? updated : product))
-      return true
-    }
-
-    try {
-      const response = await fetch(`${API_BASE}/api/products/${updated.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updated),
-      })
-
-      const result = await response.json()
-      if (!response.ok) {
-        alert(result.error || 'Unable to update product')
-        return false
-      }
-
-      setProducts(prev => prev.map(p => p.id === updated.id ? result.product : p))
-      return true
-    } catch (error) {
-      console.error('Product update failed:', error)
-      alert('Unable to connect to server')
-      return false
-    }
+  function updateProduct(updated){
+    setProducts(prev => prev.map(product => product.id === updated.id ? updated : product))
+    return true
   }
 
-  async function addProduct(newProduct){
-    if (!API_BASE) {
-      setProducts(prev => [{ ...newProduct, id: `demo-${Date.now()}` }, ...prev])
-      return true
-    }
-
-    try {
-      const response = await fetch(`${API_BASE}/api/products`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newProduct),
-      })
-
-      const result = await response.json()
-      if (!response.ok) {
-        alert(result.error || 'Unable to add product')
-        return false
-      }
-
-      setProducts(prev => [result.product, ...prev])
-      return true
-    } catch (error) {
-      console.error('Product create failed:', error)
-      alert('Unable to connect to server')
-      return false
-    }
+  function addProduct(newProduct){
+    setProducts(prev => [{ ...newProduct, id: `demo-${Date.now()}` }, ...prev])
+    return true
   }
 
-  async function deleteProduct(id){
-    if (!API_BASE) {
-      setProducts(prev => prev.filter(product => product.id !== id))
-      return
-    }
-
-    try {
-      const response = await fetch(`${API_BASE}/api/products/${id}`, {
-        method: 'DELETE',
-      })
-
-      const result = await response.json()
-      if (!response.ok) {
-        alert(result.error || 'Unable to delete product')
-        return
-      }
-
-      setProducts(prev => prev.filter(p => p.id !== id))
-    } catch (error) {
-      console.error('Product delete failed:', error)
-      alert('Unable to connect to server')
-    }
+  function deleteProduct(id){
+    setProducts(prev => prev.filter(product => product.id !== id))
   }
 
-  async function clearTransactions(){
-    if (!API_BASE) {
-      setTransactions([])
-      return
-    }
-
-    try {
-      const response = await fetch(`${API_BASE}/api/transactions`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) {
-        const result = await response.json()
-        alert(result.error || 'Unable to clear transactions')
-        return
-      }
-
-      setTransactions([])
-    } catch (error) {
-      console.error('Transactions clear failed:', error)
-      alert('Unable to connect to server')
-    }
+  function clearTransactions(){
+    setTransactions([])
   }
 
   // role-based page access
