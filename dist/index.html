@@ -6,7 +6,7 @@
     <title>UPTOWN BREW POS</title>
     <link rel="icon" type="image/jpeg" href="./favicon.jpg" />
     <script>
-      if (!window.location.pathname.includes('/dist/')) {
+      if (!window.location.pathname.includes('/dist/') && !document.querySelector('script[src*="/assets/"]')) {
         window.location.replace('./dist/index.html')
       }
     </script>
