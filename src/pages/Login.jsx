@@ -39,40 +39,40 @@ export default function Login({ onLogin, onSignup }){
   }
 
   return (
-    <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh'}}>
-      <div style={{width:420}}>
-        <div style={{textAlign:'center',marginBottom:12}}>
+    <div className="login-shell">
+      <div className="login-panel">
+        <div className="login-heading">
           <img src={logo} alt="logo" width="140" />
           <h2>UPTOWN BREW</h2>
           <div className="small muted">Demo Mode Only</div>
         </div>
         <form className="card" onSubmit={submit}>
-          <div style={{marginBottom:8}}>
+          <div className="login-field">
             <label className="small">Username Ex: Admin</label>
-            <input value={username} onChange={e=>setUsername(e.target.value)} style={{width:'100%',padding:8,borderRadius:6,border:'1px solid #ddd'}} />
+            <input value={username} onChange={e=>setUsername(e.target.value)} />
           </div>
-          <div style={{marginBottom:8}}>
+          <div className="login-field">
             <label className="small">Password Ex: Admin123</label>
-            <input type="password" value={password} onChange={e=>setPassword(e.target.value)} style={{width:'100%',padding:8,borderRadius:6,border:'1px solid #ddd'}} />
+            <input type="password" value={password} onChange={e=>setPassword(e.target.value)} />
           </div>
           {mode === 'signup' && (
             <>
-              <div style={{marginBottom:8}}>
+              <div className="login-field">
                 <label className="small">Role</label>
-                <select value={role} onChange={e=>setRole(e.target.value)} style={{width:'100%',padding:8,borderRadius:6,border:'1px solid #ddd'}}>
+                <select value={role} onChange={e=>setRole(e.target.value)}>
                   <option value="cashier">Cashier</option>
                   <option value="admin">Admin</option>
                 </select>
               </div>
-              <div style={{marginBottom:8}}>
+              <div className="login-field">
                 <label className="small">Confirm password</label>
-                <input type="password" value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)} style={{width:'100%',padding:8,borderRadius:6,border:'1px solid #ddd'}} />
+                <input type="password" value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)} />
               </div>
             </>
           )}
           {error && <div style={{color:'red',marginBottom:8}}>{error}</div>}
           {status && <div style={{color:'green',marginBottom:8}}>{status}</div>}
-          <div style={{marginTop:12,display:'flex',justifyContent:'space-between',alignItems:'center',gap:8}}>
+          <div className="login-actions">
             <button type="button" className="btn btn-secondary" onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(null); setStatus(null) }}>
               {mode === 'login' ? 'Create a new account' : 'Back to login'}
             </button>

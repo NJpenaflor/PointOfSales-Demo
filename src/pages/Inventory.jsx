@@ -55,21 +55,22 @@ export default function Inventory({ products, onAdd, onEdit, onDelete }){
       <h2>Inventory</h2>
 
       <form className="card" onSubmit={handleAdd} style={{marginBottom:12}}>
-        <div style={{display:'flex',gap:8,alignItems:'center'}}>
+        <div className="inventory-form-row">
           <input placeholder="Product name" value={name} onChange={e=>setName(e.target.value)} style={{flex:1,padding:8,borderRadius:6,border:'1px solid #ddd'}} />
           <input type="number" value={price} onChange={e=>setPrice(e.target.value)} style={{width:100,padding:8,borderRadius:6,border:'1px solid #ddd'}} />
           <input type="number" value={stock} onChange={e=>setStock(e.target.value)} style={{width:100,padding:8,borderRadius:6,border:'1px solid #ddd'}} />
           <input type="file" accept="image/*" onChange={e=>setAddImage(e.target.files[0])} />
           <button className="btn" type="submit">Add Product</button>
         </div>
-        <div style={{marginTop:8,display:'flex',alignItems:'center',gap:12}}>
+        <div className="inventory-preview">
           {addImage && <img src={URL.createObjectURL(addImage)} alt="preview" width={64} style={{borderRadius:8}} />}
           <div className="small muted">New products are saved to the database.</div>
         </div>
       </form>
 
       <div className="card">
-        <table className="table">
+        <div className="table-wrap">
+          <table className="table">
           <thead>
             <tr><th>Image</th><th>Name</th><th>Price</th><th>Stock</th><th>Actions</th></tr>
           </thead>
@@ -127,7 +128,8 @@ export default function Inventory({ products, onAdd, onEdit, onDelete }){
               </tr>
             ))}
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
     </div>
   )

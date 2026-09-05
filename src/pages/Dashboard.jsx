@@ -16,7 +16,7 @@ export default function Dashboard({ products, transactions, onClearTransactions 
   return (
     <div>
       <h2>Dashboard</h2>
-      <div style={{display:'flex',gap:12}}>
+      <div className="stats-row">
         <div className="card" style={{flex:1}}>
           <div className="small">Sold Products</div>
           <div style={{fontSize:24,fontWeight:700}}>{soldProducts}</div>

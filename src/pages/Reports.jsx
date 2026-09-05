@@ -12,7 +12,7 @@ export default function Reports({ transactions, products, onClearTransactions })
   return (
     <div>
       <h2>Reports</h2>
-      <div style={{display:'flex',gap:12}}>
+      <div className="stats-row">
         <div className="card" style={{flex:1}}>
           <div className="small">Total Transactions</div>
           <div style={{fontWeight:700,fontSize:20}}>{total}</div>
